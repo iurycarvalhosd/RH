@@ -42,6 +42,14 @@ export interface PositionFunction {
   created_at: string;
 }
 
+export interface Sector {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export type EmployeeStatus = "active" | "inactive";
 export type MaritalStatus = "solteiro" | "casado" | "divorciado" | "viuvo" | "uniao_estavel";
 export type ContractType = "experiencia" | "indeterminado";
@@ -50,6 +58,7 @@ export interface Employee {
   id: string;
   branch_id: string;
   position_id: string | null;
+  sector_id: string | null;
   name: string;
   hire_date: string;
   status: EmployeeStatus;
@@ -75,6 +84,7 @@ export interface Employee {
 export interface EmployeeWithRefs extends Employee {
   branch?: Pick<Branch, "id" | "name"> | null;
   position?: Pick<JobPosition, "id" | "title"> | null;
+  sector?: Pick<Sector, "id" | "name"> | null;
 }
 
 export interface TimeEntry {

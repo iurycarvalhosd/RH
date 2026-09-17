@@ -1,7 +1,7 @@
 import { type NextRequest } from "next/server";
 import { requireProfile } from "@/lib/auth/rbac";
 import { apiErrorResponse, getBranchFilter, jsonOk } from "@/lib/api-helpers";
-import { getTurnoverByBranch, getTurnoverSeries } from "@/lib/calculations/turnover";
+import { getTurnoverByBranch, getTurnoverBySector, getTurnoverSeries } from "@/lib/calculations/turnover";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +10,8 @@ export async function GET(request: NextRequest) {
     const series = await getTurnoverSeries(branchId, 6);
     const latest = series[series.length - 1];
     const by_branch = !branchId ? await getTurnoverByBranch(latest.year, latest.month) : [];
-    return jsonOk({ series, by_branch });
+    const by_sector = await getTurnoverBySector(latest.year, latest.month, branchId);
+    return jsonOk({ series, by_branch, by_sector });
   } catch (e) {
     return apiErrorResponse(e);
   }

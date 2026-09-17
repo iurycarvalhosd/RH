@@ -4,6 +4,7 @@ import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 export interface PayrollReportRow {
   employeeName: string;
   branchName: string;
+  sectorName: string;
   baseSalary: number;
   credits: number;
   debits: number;
@@ -42,9 +43,10 @@ const styles = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
     marginTop: 2,
   },
-  colName: { width: 130, paddingHorizontal: 4 },
-  colBranch: { width: 90, paddingHorizontal: 4 },
-  colMoney: { width: 90, paddingHorizontal: 4, textAlign: "right" },
+  colName: { width: 105, paddingHorizontal: 4 },
+  colBranch: { width: 65, paddingHorizontal: 4 },
+  colSector: { width: 65, paddingHorizontal: 4 },
+  colMoney: { width: 70, paddingHorizontal: 4, textAlign: "right" },
   footer: {
     position: "absolute",
     bottom: 24,
@@ -92,6 +94,7 @@ export function PayrollReportDocument({ data }: { data: PayrollReportData }) {
         <View style={styles.tableHeader}>
           <Text style={styles.colName}>Colaborador</Text>
           <Text style={styles.colBranch}>Filial</Text>
+          <Text style={styles.colSector}>Setor</Text>
           <Text style={styles.colMoney}>Salário base</Text>
           <Text style={styles.colMoney}>Créditos</Text>
           <Text style={styles.colMoney}>Débitos</Text>
@@ -101,6 +104,7 @@ export function PayrollReportDocument({ data }: { data: PayrollReportData }) {
           <View style={styles.tableRow} key={idx} wrap={false}>
             <Text style={styles.colName}>{r.employeeName}</Text>
             <Text style={styles.colBranch}>{r.branchName}</Text>
+            <Text style={styles.colSector}>{r.sectorName}</Text>
             <Text style={styles.colMoney}>{money(r.baseSalary)}</Text>
             <Text style={styles.colMoney}>{money(r.credits)}</Text>
             <Text style={styles.colMoney}>{money(r.debits)}</Text>
@@ -110,6 +114,7 @@ export function PayrollReportDocument({ data }: { data: PayrollReportData }) {
         <View style={styles.totalRow} wrap={false}>
           <Text style={styles.colName}>TOTAL</Text>
           <Text style={styles.colBranch}></Text>
+          <Text style={styles.colSector}></Text>
           <Text style={styles.colMoney}>{money(totals.baseSalary)}</Text>
           <Text style={styles.colMoney}>{money(totals.credits)}</Text>
           <Text style={styles.colMoney}>{money(totals.debits)}</Text>

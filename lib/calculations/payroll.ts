@@ -56,6 +56,7 @@ export interface PayrollSummary {
   previous: PayrollTotals;
   variation_pct: number | null;
   by_branch: Array<{ branch_id: string; branch_name: string; net: number }>;
+  by_sector: Array<{ sector_id: string; sector_name: string; net: number }>;
 }
 
 export async function getPayrollSummary(branchId: string | null, year: number, month: number): Promise<PayrollSummary> {
@@ -84,5 +85,23 @@ export async function getPayrollSummary(branchId: string | null, year: number, m
     );
   }
 
-  return { current, previous, variation_pct, by_branch };
+  const sectorGroups = new Map<string, { sector_id: string; sector_name: string; ids: string[] }>();
+  for (const emp of employees) {
+    if (!emp.sector_id) continue;
+    const g = sectorGroups.get(emp.sector_id) ?? {
+      sector_id: emp.sector_id,
+      sector_name: emp.sector_name ?? "-",
+      ids: [],
+    };
+    g.ids.push(emp.id);
+    sectorGroups.set(emp.sector_id, g);
+  }
+  const by_sector = await Promise.all(
+    Array.from(sectorGroups.values()).map(async (g) => {
+      const totals = await sumForEmployees(g.ids, year, month);
+      return { sector_id: g.sector_id, sector_name: g.sector_name, net: totals.net };
+    })
+  );
+
+  return { current, previous, variation_pct, by_branch, by_sector };
 }

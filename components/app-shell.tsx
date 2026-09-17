@@ -21,6 +21,7 @@ const NAV_ITEMS: { href: string; label: string; adminOnly?: boolean }[] = [
   { href: "/compliance", label: "Compliance" },
   { href: "/indicadores", label: "Indicadores" },
   { href: "/cargos", label: "Cargos" },
+  { href: "/setores", label: "Setores" },
   { href: "/onboarding", label: "Onboarding" },
   { href: "/desligamentos", label: "Desligamentos" },
   { href: "/usuarios", label: "Usuários", adminOnly: true },

@@ -8,6 +8,7 @@ export interface HrCostBreakdown {
   training: number;
   other: number;
   total: number;
+  by_sector: Array<{ sector_id: string; sector_name: string; payroll_net: number }>;
 }
 
 function monthBounds(year: number, month: number) {
@@ -41,6 +42,11 @@ export async function getHrCostBreakdown(branchId: string | null, year: number, 
   const other = (others ?? []).reduce((a, o) => a + Number(o.amount), 0);
   const payroll = payrollSummary.current.base_salary;
   const benefits = payrollSummary.current.benefits;
+  const by_sector = payrollSummary.by_sector.map((s) => ({
+    sector_id: s.sector_id,
+    sector_name: s.sector_name,
+    payroll_net: s.net,
+  }));
 
-  return { payroll, benefits, training, other, total: payroll + benefits + training + other };
+  return { payroll, benefits, training, other, total: payroll + benefits + training + other, by_sector };
 }

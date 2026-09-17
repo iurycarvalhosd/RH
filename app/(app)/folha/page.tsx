@@ -23,6 +23,7 @@ interface Summary {
   previous: { net: number };
   variation_pct: number | null;
   by_branch: Array<{ branch_id: string; branch_name: string; net: number }>;
+  by_sector: Array<{ sector_id: string; sector_name: string; net: number }>;
 }
 
 function money(n: number) {
@@ -214,6 +215,28 @@ export default function FolhaPage() {
                     <tr key={b.branch_id}>
                       <td>{b.branch_name}</td>
                       <td>{money(b.net)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
+
+          {summary.by_sector.length > 0 && (
+            <>
+              <h3>Total líquido por setor</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Setor</th>
+                    <th>Total líquido</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {summary.by_sector.map((s) => (
+                    <tr key={s.sector_id}>
+                      <td>{s.sector_name}</td>
+                      <td>{money(s.net)}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -5,7 +5,7 @@ import { useBranch } from "@/lib/branch-context";
 import { useIsAdmin } from "@/lib/profile-context";
 import { apiGet, apiPost, apiPut, apiDelete, ClientApiError } from "@/lib/client/api";
 import { ScopeIndicator } from "@/components/scope-indicator";
-import type { ContractType, EmployeeWithRefs, JobPosition, MaritalStatus } from "@/lib/types";
+import type { ContractType, EmployeeWithRefs, JobPosition, MaritalStatus, Sector } from "@/lib/types";
 
 const MARITAL_STATUS_LABEL: Record<MaritalStatus, string> = {
   solteiro: "Solteiro(a)",
@@ -19,6 +19,7 @@ function emptyForm(defaultBranchId: string) {
   return {
     branch_id: defaultBranchId,
     position_id: "",
+    sector_id: "",
     name: "",
     hire_date: "",
     status: "active" as "active" | "inactive",
@@ -45,6 +46,7 @@ export default function EquipePage() {
   const isAdmin = useIsAdmin();
   const [employees, setEmployees] = useState<EmployeeWithRefs[] | null>(null);
   const [positions, setPositions] = useState<JobPosition[]>([]);
+  const [sectors, setSectors] = useState<Sector[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm(isNetworkScope ? "" : activeBranchId));
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -66,6 +68,7 @@ export default function EquipePage() {
 
   useEffect(() => {
     apiGet("/api/positions").then(setPositions).catch(() => {});
+    apiGet("/api/sectors").then(setSectors).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -78,6 +81,7 @@ export default function EquipePage() {
     setForm({
       branch_id: emp.branch_id,
       position_id: emp.position_id ?? "",
+      sector_id: emp.sector_id ?? "",
       name: emp.name,
       hire_date: emp.hire_date,
       status: emp.status,
@@ -111,6 +115,7 @@ export default function EquipePage() {
     const payload = {
       ...form,
       position_id: form.position_id || null,
+      sector_id: form.sector_id || null,
       email: form.email || null,
       marital_status: form.marital_status || null,
       base_salary: form.base_salary === "" ? null : Number(form.base_salary),
@@ -189,6 +194,21 @@ export default function EquipePage() {
                 {positions.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="field">
+              <label htmlFor="sector_id">Setor</label>
+              <select
+                id="sector_id"
+                value={form.sector_id}
+                onChange={(e) => setForm({ ...form, sector_id: e.target.value })}
+              >
+                <option value="">Sem setor definido</option>
+                {sectors.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
                   </option>
                 ))}
               </select>
@@ -420,6 +440,7 @@ export default function EquipePage() {
                 <th>Nome</th>
                 {isNetworkScope && <th>Filial</th>}
                 <th>Cargo</th>
+                <th>Setor</th>
                 <th>Admissão</th>
                 <th>Status</th>
                 <th>Contato</th>
@@ -432,6 +453,7 @@ export default function EquipePage() {
                   <td>{emp.name}</td>
                   {isNetworkScope && <td>{emp.branch?.name ?? "-"}</td>}
                   <td>{emp.position?.title ?? "-"}</td>
+                  <td>{emp.sector?.name ?? "-"}</td>
                   <td>{new Date(emp.hire_date + "T00:00:00").toLocaleDateString("pt-BR")}</td>
                   <td>
                     <span className="badge" data-status={emp.status === "active" ? "ok" : "critico"}>

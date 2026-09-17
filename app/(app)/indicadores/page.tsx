@@ -25,6 +25,11 @@ interface BranchRate {
   branch_name: string;
   rate_pct: number | null;
 }
+interface SectorRate {
+  sector_id: string;
+  sector_name: string;
+  rate_pct: number | null;
+}
 interface TrainingInvestmentItem {
   id: string;
   name: string;
@@ -52,9 +57,16 @@ export default function IndicadoresPage() {
   const { activeBranchId, isNetworkScope } = useBranch();
   const period = useCurrentPeriod();
 
-  const [turnover, setTurnover] = useState<{ series: SeriesPoint[]; by_branch: BranchRate[] } | null>(null);
-  const [absenteeism, setAbsenteeism] = useState<{ series: SeriesPoint[]; by_branch: BranchRate[] } | null>(null);
-  const [hrCost, setHrCost] = useState<{ payroll: number; benefits: number; training: number; other: number; total: number } | null>(null);
+  const [turnover, setTurnover] = useState<{ series: SeriesPoint[]; by_branch: BranchRate[]; by_sector: SectorRate[] } | null>(null);
+  const [absenteeism, setAbsenteeism] = useState<{ series: SeriesPoint[]; by_branch: BranchRate[]; by_sector: SectorRate[] } | null>(null);
+  const [hrCost, setHrCost] = useState<{
+    payroll: number;
+    benefits: number;
+    training: number;
+    other: number;
+    total: number;
+    by_sector: Array<{ sector_id: string; sector_name: string; payroll_net: number }>;
+  } | null>(null);
   const [trainingRoi, setTrainingRoi] = useState<{ items: TrainingInvestmentItem[]; average_roi_score: number | null; total_cost: number } | null>(null);
   const [enpsHistory, setEnpsHistory] = useState<EnpsHistoryPoint[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -219,6 +231,27 @@ export default function IndicadoresPage() {
                 </table>
               </>
             )}
+            {turnover.by_sector.length > 0 && (
+              <>
+                <h3>Turnover por setor (mês atual)</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Setor</th>
+                      <th>Taxa</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {turnover.by_sector.map((s) => (
+                      <tr key={s.sector_id}>
+                        <td>{s.sector_name}</td>
+                        <td>{pct(s.rate_pct)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            )}
           </>
         )}
       </section>
@@ -268,6 +301,27 @@ export default function IndicadoresPage() {
                 </table>
               </>
             )}
+            {absenteeism.by_sector.length > 0 && (
+              <>
+                <h3>Absenteísmo por setor (mês atual)</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Setor</th>
+                      <th>Taxa</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {absenteeism.by_sector.map((s) => (
+                      <tr key={s.sector_id}>
+                        <td>{s.sector_name}</td>
+                        <td>{pct(s.rate_pct)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            )}
           </>
         )}
       </section>
@@ -299,6 +353,30 @@ export default function IndicadoresPage() {
                 <div className="label">Total</div>
               </div>
             </div>
+            {hrCost.by_sector.length > 0 && (
+              <>
+                <h3>Custo de folha (salário + benefícios) por setor</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Setor</th>
+                      <th>Custo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {hrCost.by_sector.map((s) => (
+                      <tr key={s.sector_id}>
+                        <td>{s.sector_name}</td>
+                        <td>{money(s.payroll_net)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <p className="muted" style={{ fontSize: "0.75rem" }}>
+                  Treinamentos e outros custos são lançados por filial/rede e não entram neste recorte por setor.
+                </p>
+              </>
+            )}
             <h3>Lançar outro custo de RH</h3>
             <form onSubmit={submitOtherCost}>
               <div className="form-row">

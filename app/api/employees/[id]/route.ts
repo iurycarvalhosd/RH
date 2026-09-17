@@ -7,6 +7,7 @@ import { apiErrorResponse, jsonOk } from "@/lib/api-helpers";
 const EmployeeUpdate = z.object({
   branch_id: z.string().uuid().optional(),
   position_id: z.string().uuid().nullable().optional(),
+  sector_id: z.string().uuid().nullable().optional(),
   name: z.string().min(1).optional(),
   hire_date: z.string().min(1).optional(),
   status: z.enum(["active", "inactive"]).optional(),
@@ -36,7 +37,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
     const admin = createAdminClient();
     const { data, error } = await admin
       .from("employees")
-      .select("*, branch:branches(id, name), position:job_positions(id, title)")
+      .select("*, branch:branches(id, name), position:job_positions(id, title), sector:sectors(id, name)")
       .eq("id", id)
       .single();
     if (error) throw error;
@@ -67,7 +68,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
       .from("employees")
       .update(body)
       .eq("id", id)
-      .select("*, branch:branches(id, name), position:job_positions(id, title)")
+      .select("*, branch:branches(id, name), position:job_positions(id, title), sector:sectors(id, name)")
       .single();
     if (error) throw error;
     return jsonOk(data);

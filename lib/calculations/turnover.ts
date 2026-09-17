@@ -4,19 +4,22 @@ import { createAdminClient } from "@/lib/supabase/admin";
 interface EmployeeLifecycle {
   id: string;
   branch_id: string;
+  sector_id: string | null;
   hire_date: string;
   termination_date: string | null;
 }
 
-async function loadLifecycles(branchId: string | null): Promise<EmployeeLifecycle[]> {
+async function loadLifecycles(branchId: string | null, sectorId: string | null = null): Promise<EmployeeLifecycle[]> {
   const admin = createAdminClient();
-  let query = admin.from("employees").select("id, branch_id, hire_date, terminations(termination_date)");
+  let query = admin.from("employees").select("id, branch_id, sector_id, hire_date, terminations(termination_date)");
   if (branchId) query = query.eq("branch_id", branchId);
+  if (sectorId) query = query.eq("sector_id", sectorId);
   const { data, error } = await query;
   if (error) throw error;
   type EmployeeRow = {
     id: string;
     branch_id: string;
+    sector_id: string | null;
     hire_date: string;
     terminations: { termination_date: string } | { termination_date: string }[] | null;
   };
@@ -25,6 +28,7 @@ async function loadLifecycles(branchId: string | null): Promise<EmployeeLifecycl
     return {
       id: row.id,
       branch_id: row.branch_id,
+      sector_id: row.sector_id,
       hire_date: row.hire_date,
       termination_date: termination?.termination_date ?? null,
     };
@@ -52,8 +56,12 @@ export interface TurnoverPoint {
   rate_pct: number | null;
 }
 
-export async function getTurnoverSeries(branchId: string | null, monthsBack = 6): Promise<TurnoverPoint[]> {
-  const lifecycles = await loadLifecycles(branchId);
+export async function getTurnoverSeries(
+  branchId: string | null,
+  monthsBack = 6,
+  sectorId: string | null = null
+): Promise<TurnoverPoint[]> {
+  const lifecycles = await loadLifecycles(branchId, sectorId);
   const now = new Date();
   const points: TurnoverPoint[] = [];
 
@@ -87,6 +95,25 @@ export async function getTurnoverByBranch(year: number, month: number): Promise<
       const series = await getTurnoverSeries(b.id, 1);
       const point = series.find((p) => p.year === year && p.month === month) ?? series[series.length - 1];
       return { branch_id: b.id, branch_name: b.name, rate_pct: point?.rate_pct ?? null };
+    })
+  );
+  return results;
+}
+
+export async function getTurnoverBySector(
+  year: number,
+  month: number,
+  branchId: string | null
+): Promise<Array<{ sector_id: string; sector_name: string; rate_pct: number | null }>> {
+  const admin = createAdminClient();
+  const { data: sectors, error } = await admin.from("sectors").select("id, name").order("name");
+  if (error) throw error;
+
+  const results = await Promise.all(
+    (sectors ?? []).map(async (s) => {
+      const series = await getTurnoverSeries(branchId, 1, s.id);
+      const point = series.find((p) => p.year === year && p.month === month) ?? series[series.length - 1];
+      return { sector_id: s.id, sector_name: s.name, rate_pct: point?.rate_pct ?? null };
     })
   );
   return results;

@@ -18,8 +18,12 @@ function monthBounds(year: number, month: number) {
   return { start, end };
 }
 
-export async function getAbsenteeismSeries(branchId: string | null, monthsBack = 6): Promise<AbsenteeismPoint[]> {
-  const employees = await listScopedEmployees(branchId, { onlyActive: true });
+export async function getAbsenteeismSeries(
+  branchId: string | null,
+  monthsBack = 6,
+  sectorId: string | null = null
+): Promise<AbsenteeismPoint[]> {
+  const employees = await listScopedEmployees(branchId, { onlyActive: true, sectorId });
   const employeeIds = employees.map((e) => e.id);
   if (employeeIds.length === 0) return [];
 
@@ -55,6 +59,20 @@ export async function getAbsenteeismByBranch(year: number, month: number) {
       const series = await getAbsenteeismSeries(b.id, 1);
       const point = series.find((p) => p.year === year && p.month === month) ?? series[series.length - 1];
       return { branch_id: b.id, branch_name: b.name, rate_pct: point?.rate_pct ?? null };
+    })
+  );
+}
+
+export async function getAbsenteeismBySector(year: number, month: number, branchId: string | null) {
+  const admin = createAdminClient();
+  const { data: sectors, error } = await admin.from("sectors").select("id, name").order("name");
+  if (error) throw error;
+
+  return Promise.all(
+    (sectors ?? []).map(async (s) => {
+      const series = await getAbsenteeismSeries(branchId, 1, s.id);
+      const point = series.find((p) => p.year === year && p.month === month) ?? series[series.length - 1];
+      return { sector_id: s.id, sector_name: s.name, rate_pct: point?.rate_pct ?? null };
     })
   );
 }

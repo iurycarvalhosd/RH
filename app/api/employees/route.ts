@@ -7,6 +7,7 @@ import { apiErrorResponse, getBranchFilter, jsonOk } from "@/lib/api-helpers";
 const EmployeeInput = z.object({
   branch_id: z.string().uuid("Selecione a filial."),
   position_id: z.string().uuid().nullable().optional(),
+  sector_id: z.string().uuid().nullable().optional(),
   name: z.string().min(1, "Nome é obrigatório."),
   hire_date: z.string().min(1, "Data de admissão é obrigatória."),
   status: z.enum(["active", "inactive"]).default("active"),
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
     const admin = createAdminClient();
     let query = admin
       .from("employees")
-      .select("*, branch:branches(id, name), position:job_positions(id, title)")
+      .select("*, branch:branches(id, name), position:job_positions(id, title), sector:sectors(id, name)")
       .order("name");
     if (branchId) query = query.eq("branch_id", branchId);
     if (status === "active" || status === "inactive") query = query.eq("status", status);
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await admin
       .from("employees")
       .insert(body)
-      .select("*, branch:branches(id, name), position:job_positions(id, title)")
+      .select("*, branch:branches(id, name), position:job_positions(id, title), sector:sectors(id, name)")
       .single();
     if (error) throw error;
     return jsonOk(data, { status: 201 });

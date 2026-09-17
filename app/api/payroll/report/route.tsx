@@ -22,7 +22,12 @@ const MONTH_NAMES = [
 
 interface RecordRow {
   base_salary: number;
-  employee: { name: string; branch_id: string; branch: { name: string } | null } | null;
+  employee: {
+    name: string;
+    branch_id: string;
+    branch: { name: string } | null;
+    sector: { name: string } | null;
+  } | null;
   benefits: Array<{ value: number }>;
   deductions: Array<{ value: number }>;
 }
@@ -47,7 +52,7 @@ export async function GET(request: NextRequest) {
     let query = admin
       .from("payroll_records")
       .select(
-        "base_salary, employee:employees!inner(name, branch_id, branch:branches(name)), benefits:payroll_benefits(value), deductions:payroll_deductions(value)"
+        "base_salary, employee:employees!inner(name, branch_id, branch:branches(name), sector:sectors(name)), benefits:payroll_benefits(value), deductions:payroll_deductions(value)"
       )
       .eq("period_year", year)
       .eq("period_month", month)
@@ -63,6 +68,7 @@ export async function GET(request: NextRequest) {
       return {
         employeeName: r.employee?.name ?? "-",
         branchName: r.employee?.branch?.name ?? "-",
+        sectorName: r.employee?.sector?.name ?? "-",
         baseSalary: Number(r.base_salary),
         credits,
         debits,
