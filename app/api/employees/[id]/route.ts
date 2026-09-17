@@ -12,6 +12,19 @@ const EmployeeUpdate = z.object({
   status: z.enum(["active", "inactive"]).optional(),
   email: z.string().email().nullable().optional().or(z.literal("")),
   phone: z.string().nullable().optional(),
+  cpf: z.string().nullable().optional(),
+  rg: z.string().nullable().optional(),
+  birth_date: z.string().nullable().optional().or(z.literal("")),
+  nationality: z.string().min(1).optional(),
+  marital_status: z.enum(["solteiro", "casado", "divorciado", "viuvo", "uniao_estavel"]).nullable().optional(),
+  address: z.string().nullable().optional(),
+  ctps_number: z.string().nullable().optional(),
+  ctps_series: z.string().nullable().optional(),
+  pis_pasep: z.string().nullable().optional(),
+  base_salary: z.coerce.number().nullable().optional(),
+  work_schedule: z.string().nullable().optional(),
+  contract_type: z.enum(["experiencia", "indeterminado"]).optional(),
+  experience_end_date: z.string().nullable().optional().or(z.literal("")),
 });
 
 type Params = { params: Promise<{ id: string }> };
@@ -38,7 +51,17 @@ export async function PUT(request: NextRequest, { params }: Params) {
     await requireRole("admin");
     const { id } = await params;
     const parsed = EmployeeUpdate.parse(await request.json());
-    const body = { ...parsed, email: parsed.email === "" ? null : parsed.email };
+    const body = {
+      ...parsed,
+      email: parsed.email === "" ? null : parsed.email,
+      birth_date: parsed.birth_date === "" ? null : parsed.birth_date,
+      experience_end_date:
+        parsed.contract_type === "indeterminado"
+          ? null
+          : parsed.experience_end_date === ""
+            ? null
+            : parsed.experience_end_date,
+    };
     const admin = createAdminClient();
     const { data, error } = await admin
       .from("employees")

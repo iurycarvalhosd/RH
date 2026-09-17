@@ -95,12 +95,20 @@ export default function OnboardingPage() {
             <section key={emp.id} className="section">
               <h2>
                 {emp.name}{" "}
+                <span className="badge" data-status="ok" style={{ fontWeight: "normal" }}>
+                  {emp.contract_type === "experiencia" ? "Contrato de experiência" : "Prazo indeterminado"}
+                </span>{" "}
                 {empTasks.length > 0 && (
                   <span className="muted" style={{ fontWeight: "normal", fontSize: "0.85rem" }}>
                     ({doneCount}/{empTasks.length} concluídas)
                   </span>
                 )}
               </h2>
+              <p>
+                <a href={`/api/employees/${emp.id}/contract`} target="_blank" rel="noopener noreferrer">
+                  Contrato de trabalho (PDF)
+                </a>
+              </p>
               {empTasks.length === 0 ? (
                 <button onClick={() => startOnboarding(emp.id)}>Iniciar checklist de onboarding</button>
               ) : (

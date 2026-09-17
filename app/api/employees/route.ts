@@ -12,6 +12,19 @@ const EmployeeInput = z.object({
   status: z.enum(["active", "inactive"]).default("active"),
   email: z.string().email().nullable().optional().or(z.literal("")),
   phone: z.string().nullable().optional(),
+  cpf: z.string().nullable().optional(),
+  rg: z.string().nullable().optional(),
+  birth_date: z.string().nullable().optional().or(z.literal("")),
+  nationality: z.string().min(1).default("Brasileira"),
+  marital_status: z.enum(["solteiro", "casado", "divorciado", "viuvo", "uniao_estavel"]).nullable().optional(),
+  address: z.string().nullable().optional(),
+  ctps_number: z.string().nullable().optional(),
+  ctps_series: z.string().nullable().optional(),
+  pis_pasep: z.string().nullable().optional(),
+  base_salary: z.coerce.number().nullable().optional(),
+  work_schedule: z.string().nullable().optional(),
+  contract_type: z.enum(["experiencia", "indeterminado"]).default("indeterminado"),
+  experience_end_date: z.string().nullable().optional().or(z.literal("")),
 });
 
 export async function GET(request: NextRequest) {
@@ -38,7 +51,12 @@ export async function POST(request: NextRequest) {
   try {
     await requireProfile();
     const parsed = EmployeeInput.parse(await request.json());
-    const body = { ...parsed, email: parsed.email || null };
+    const body = {
+      ...parsed,
+      email: parsed.email || null,
+      birth_date: parsed.birth_date || null,
+      experience_end_date: parsed.contract_type === "experiencia" ? parsed.experience_end_date || null : null,
+    };
     const admin = createAdminClient();
     const { data, error } = await admin
       .from("employees")

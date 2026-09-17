@@ -43,6 +43,8 @@ export interface PositionFunction {
 }
 
 export type EmployeeStatus = "active" | "inactive";
+export type MaritalStatus = "solteiro" | "casado" | "divorciado" | "viuvo" | "uniao_estavel";
+export type ContractType = "experiencia" | "indeterminado";
 
 export interface Employee {
   id: string;
@@ -53,6 +55,19 @@ export interface Employee {
   status: EmployeeStatus;
   email: string | null;
   phone: string | null;
+  cpf: string | null;
+  rg: string | null;
+  birth_date: string | null;
+  nationality: string;
+  marital_status: MaritalStatus | null;
+  address: string | null;
+  ctps_number: string | null;
+  ctps_series: string | null;
+  pis_pasep: string | null;
+  base_salary: number | null;
+  work_schedule: string | null;
+  contract_type: ContractType;
+  experience_end_date: string | null;
   created_at: string;
   updated_at: string;
 }
