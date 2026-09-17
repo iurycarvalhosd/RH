@@ -14,11 +14,14 @@ export interface TrainingCertificateData {
   location: string | null;
   instructor: string | null;
   attendees: TrainingCertificateAttendee[];
+  branchAddress: string | null;
+  branchCnpj: string | null;
 }
 
 const styles = StyleSheet.create({
   page: { padding: 40, fontSize: 9.5, fontFamily: "Helvetica", color: "#111827" },
   companyName: { fontSize: 13, fontFamily: "Helvetica-Bold", textAlign: "center" },
+  branchLine: { fontSize: 9, textAlign: "center", color: "#4b5563", marginTop: 2 },
   title: { fontSize: 12, fontFamily: "Helvetica-Bold", textAlign: "center", marginTop: 16 },
   subtitle: { fontSize: 8.5, textAlign: "center", color: "#6b7280", marginTop: 3, marginBottom: 4 },
   divider: { borderBottom: "1pt solid #9ca3af", marginTop: 12, marginBottom: 10 },
@@ -70,6 +73,12 @@ export function TrainingCertificateDocument({ data }: { data: TrainingCertificat
     <Document title={`Ata de treinamento - ${data.programName}`}>
       <Page size="A4" style={styles.page} wrap>
         <Text style={styles.companyName}>SHEILA MORAIS</Text>
+        {(data.branchAddress || data.branchCnpj) && (
+          <Text style={styles.branchLine}>
+            {data.branchAddress ?? ""}
+            {data.branchCnpj ? `${data.branchAddress ? " - " : ""}CNPJ ${data.branchCnpj}` : ""}
+          </Text>
+        )}
         <Text style={styles.title}>ATA E LISTA DE PRESENÇA DE TREINAMENTO</Text>
         <Text style={styles.subtitle}>
           Registro de capacitação nos termos da NR-1 (Portaria MTP nº 3.214/78) e da(s) Norma(s) Regulamentadora(s)

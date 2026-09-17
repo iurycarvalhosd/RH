@@ -12,6 +12,8 @@ export interface PayrollReportRow {
 
 export interface PayrollReportData {
   scopeLabel: string;
+  scopeAddress: string | null;
+  scopeCnpj: string | null;
   periodLabel: string;
   rows: PayrollReportRow[];
   closedAt: string | null;
@@ -20,6 +22,7 @@ export interface PayrollReportData {
 const styles = StyleSheet.create({
   page: { padding: 40, fontSize: 9.5, fontFamily: "Helvetica", color: "#111827" },
   companyName: { fontSize: 13, fontFamily: "Helvetica-Bold", textAlign: "center" },
+  branchLine: { fontSize: 9, textAlign: "center", color: "#4b5563", marginTop: 2 },
   title: { fontSize: 12, fontFamily: "Helvetica-Bold", textAlign: "center", marginTop: 14 },
   subtitle: { fontSize: 9, textAlign: "center", color: "#6b7280", marginTop: 3, marginBottom: 4 },
   divider: { borderBottom: "1pt solid #9ca3af", marginTop: 12, marginBottom: 10 },
@@ -73,6 +76,12 @@ export function PayrollReportDocument({ data }: { data: PayrollReportData }) {
     <Document title={`Folha de pagamento - ${data.periodLabel}`}>
       <Page size="A4" style={styles.page} wrap>
         <Text style={styles.companyName}>SHEILA MORAIS</Text>
+        {(data.scopeAddress || data.scopeCnpj) && (
+          <Text style={styles.branchLine}>
+            {data.scopeAddress ?? ""}
+            {data.scopeCnpj ? `${data.scopeAddress ? " - " : ""}CNPJ ${data.scopeCnpj}` : ""}
+          </Text>
+        )}
         <Text style={styles.title}>RELATÓRIO DE FOLHA DE PAGAMENTO</Text>
         <Text style={styles.subtitle}>
           {data.scopeLabel} · Período: {data.periodLabel}

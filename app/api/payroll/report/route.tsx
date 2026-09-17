@@ -72,10 +72,14 @@ export async function GET(request: NextRequest) {
     rows.sort((a, b) => a.employeeName.localeCompare(b.employeeName));
 
     let scopeLabel = "Rede toda (consolidado)";
+    let scopeAddress: string | null = null;
+    let scopeCnpj: string | null = null;
     let closedAt: string | null = null;
     if (branchId) {
-      const { data: branch } = await admin.from("branches").select("name").eq("id", branchId).single();
+      const { data: branch } = await admin.from("branches").select("name, address, cnpj").eq("id", branchId).single();
       scopeLabel = branch?.name ?? "Filial";
+      scopeAddress = branch?.address ?? null;
+      scopeCnpj = branch?.cnpj ?? null;
       const { data: closure } = await admin
         .from("payroll_closures")
         .select("closed_at")
@@ -88,6 +92,8 @@ export async function GET(request: NextRequest) {
 
     const reportData: PayrollReportData = {
       scopeLabel,
+      scopeAddress,
+      scopeCnpj,
       periodLabel: `${MONTH_NAMES[month - 1]}/${year}`,
       rows,
       closedAt,
